@@ -3,24 +3,14 @@ import re
 import pandas as pd
 from PyPDF2 import PdfReader
 import warnings
+from dependencias import mapeo_dependencias
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # --- CONFIGURACIÓN ---
-DIRECTORIO_PDFS = r"C:\Users\user\Desktop\Descarga automatica\PARTES"
-SALIDA_EXCEL = r"C:\Users\user\Desktop\Descarga automatica\resultado_detallado_corregido.xlsx"
-ARCHIVO_DEPENDENCIAS = r"C:\Users\user\Desktop\DEPEN.xlsx"
+DIRECTORIO_PDFS = r"C:\Users\ignac\OneDrive\Desktop\PARTES"
+SALIDA_EXCEL = r"C:\Users\ignac\OneDrive\Desktop\resultado_detallado_corregido.xlsx"
 
-# --- CARGAR TABLA DE DEPENDENCIAS ---
-print("Cargando tabla de dependencias...")
-try:
-    df_dependencias = pd.read_excel(ARCHIVO_DEPENDENCIAS)
-    # Crear diccionario de mapeo {código: nombre_completo}
-    mapeo_dependencias = dict(zip(df_dependencias['COD'].astype(str), df_dependencias['DEPENDENCIA']))
-    print(f"Cargadas {len(mapeo_dependencias)} dependencias")
-except Exception as e:
-    print(f"Error cargando dependencias: {e}")
-    mapeo_dependencias = {}
 
 # --- FUNCIONES AUXILIARES ---
 def limpiar_dni(dni):
@@ -43,10 +33,15 @@ def extraer_todos(patron, texto, limpiar=None):
     return [limpiar(m.strip()) if limpiar else m.strip() for m in matches]
 
 def obtener_nombre_dependencia(codigo):
-    """Obtiene el nombre completo de la dependencia basado en el código"""
+    """Obtiene el código y nombre completo de la dependencia basado en el código"""
     if not codigo or codigo == "-":
         return "-"
-    return mapeo_dependencias.get(str(codigo), f"CÓDIGO {codigo} NO ENCONTRADO")
+    nombre = mapeo_dependencias.get(str(codigo))
+    if nombre:
+        return f"{codigo} - {nombre}"
+    else:
+        return f"CÓDIGO {codigo} NO ENCONTRADO"
+
 
 def limpiar_coordenadas(coordenadas):
     """Limpia y formatea las coordenadas como números decimales separados por coma"""
